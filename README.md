@@ -1,0 +1,2 @@
+# Ghostapp.Lock
+Privacy app
