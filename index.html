@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Privacy App (Demo)</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        header {
+            background: #333;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        main {
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        section {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        h2 {
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        button, input[type="submit"] {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin: 5px 2px;
+        }
+        button:hover, input[type="submit"]:hover {
+            background-color: #4cae4c;
+        }
+        button.danger {
+            background-color: #d9534f;
+        }
+        button.danger:hover {
+            background-color: #c9302c;
+        }
+        button.secondary {
+            background-color: #f0ad4e;
+        }
+         button.secondary:hover {
+            background-color: #ec971f;
+        }
+        input[type="text"], input[type="number"], input[type="password"], input[type="search"] {
+            padding: 8px;
+            margin-right: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        label {
+            margin-right: 10px;
+        }
+        .item-list div {
+            padding: 8px 0;
+            border-bottom: 1px dotted #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .item-list div:last-child {
+            border-bottom: none;
+        }
+        .item-list span {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        .item-list .folder-label {
+            font-size: 0.8em;
+            color: #777;
+            margin-left: 5px;
+        }
+        .item-list .notes {
+            font-style: italic;
+            color: #555;
+            font-size: 0.9em;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        .form-group label {
+            display: inline-block;
+            min-width: 80px;
+        }
+        #hidden-content {
+            display: none; /* Initially hidden */
+        }
+        #activityLog {
+            font-size: 0.85em;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #fdfdfd;
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        #activityLog div {
+             padding: 3px 0;
+             border-bottom: 1px dashed #f0f0f0;
+        }
+         #activityLog div:last-child {
+             border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Ghost Privacy App (Demo)</h1>
+    </header>
+
+    <main>
+        <button id="accessButton" onclick="handleAccessAttempt()">Access Hidden Content</button>
+        <hr>
+
+        <div id="hidden-content">
+            <!-- Hidden Apps Section -->
+            <section id="appsSection">
+                <h2>Hidden Apps</h2>
+                <div class="form-group">
+                    <form id="add-app-form">
+                        <label for="app-id">App ID:</label>
+                        <input type="text" id="app-id" placeholder="com.example.newapp" required>
+                        <label for="app-name">Name:</label>
+                        <input type="text" id="app-name" placeholder="New Secret App" required>
+                        <label for="app-folder">Folder:</label>
+                        <input type="text" id="app-folder" placeholder="(Optional)">
+                        <input type="submit" value="Hide App">
+                    </form>
+                </div>
+                 <div class="form-group">
+                    <label for="app-search">Search:</label>
+                    <input type="search" id="app-search" placeholder="Search apps...">
+                    <button onclick="handleAppSearch()">Search</button>
+                </div>
+                <div id="appList" class="item-list">
+                    <!-- App list will be rendered here by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Hidden Contacts Section -->
+            <section id="contactsSection">
+                <h2>Hidden Contacts</h2>
+                 <div class="form-group">
+                    <form id="add-contact-form">
+                        <label for="contact-id">ID:</label>
+                        <input type="text" id="contact-id" placeholder="Unique ID (e.g., 3)" required>
+                        <label for="contact-name">Name:</label>
+                        <input type="text" id="contact-name" placeholder="Contact Name" required>
+                        <label for="contact-phone">Phone:</label>
+                        <input type="text" id="contact-phone" placeholder="+15551234567" required>
+                         <label for="contact-notes">Notes:</label>
+                        <input type="text" id="contact-notes" placeholder="(Optional)">
+                        <input type="submit" value="Add Contact">
+                    </form>
+                </div>
+                <div id="contactList" class="item-list">
+                    <!-- Contact list will be rendered here by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settingsSection">
+                <h2>Settings</h2>
+                <div class="form-group">
+                    <input type="checkbox" id="mfa-toggle" onchange="handleMfaToggle(this.checked)">
+                    <label for="mfa-toggle">Enable Multi-Factor Authentication (PIN)</label>
+                </div>
+                 <div class="form-group">
+                    <label for="lockout-threshold">Lockout Threshold:</label>
+                    <input type="number" id="lockout-threshold" min="1" style="width: 60px;">
+                    <button onclick="handleSetLockout()">Set Attempts</button>
+                </div>
+                 <div class="form-group">
+                     <label for="backup-password">Reset Lockout:</label>
+                     <input type="password" id="backup-password" placeholder="Enter Backup Password">
+                     <button class="secondary" onclick="handleResetLockout()">Reset Lockout</button>
+                     <small>(Demo pass: master_override)</small>
+                 </div>
+                 <div class="form-group">
+                     <p>Other Settings (Placeholders):</p>
+                     <button class="secondary" onclick="alert('Theme customization not implemented.')">Customize Theme</button>
+                     <button class="secondary" onclick="alert('Icon customization not implemented.')">Customize Ghost Icon</button>
+                 </div>
+                 <div class="form-group">
+                    <button class="danger" onclick="handleResetData()">Reset All Demo Data</button>
+                 </div>
+            </section>
+
+            <!-- Activity Log Section -->
+            <section id="logSection">
+                <h2>Activity Log (Last 100 entries)</h2>
+                <div id="activityLog">
+                    <!-- Log entries will be rendered here by JavaScript -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        // --- Rendering Functions ---
+        function renderApps() {
+            const appList = document.getElementById('appList');
+            if (!appList) return;
+            appList.innerHTML = GhostApp.hiddenApps.length === 0
+                ? '<div>No hidden apps.</div>'
+                : GhostApp.hiddenApps.map(app =>
+                    `<div>
+                        <span>
+                            ${app.name}
+                            ${app.folder ? '<span class="folder-label">[' + app.folder + ']</span>' : ''}
+                            ${app.accessHours ? '<span class="folder-label" title="Access: ' + app.accessHours.start + ':00-' + app.accessHours.end + ':00">[Time Restricted]</span>' : ''}
+                        </span>
+                        <span>
+                            <button class="secondary" onclick="GhostApp.launchApp('${app.id}')">Launch</button>
+                            <button class="danger" onclick="unhideAppWrapper('${app.id}')">Unhide</button>
+                        </span>
+                    </div>`
+                ).join('');
+        }
+
+        function renderContacts() {
+            const contactList = document.getElementById('contactList');
+            if (!contactList) return;
+            contactList.innerHTML = GhostApp.hiddenContacts.length === 0
+                ? '<div>No hidden contacts.</div>'
+                : GhostApp.hiddenContacts.map(c =>
+                    `<div>
+                        <span>
+                            ${c.name} (${c.phone})
+                            ${c.notes ? '<span class="notes"> - ' + c.notes + '</span>' : ''}
+                            ${c.ringtone && c.ringtone !== 'default' ? '<span class="folder-label">[Ringtone: ' + c.ringtone + ']</span>' : ''}
+                        </span>
+                        <span>
+                             <button class="secondary" onclick="GhostApp.sendEncryptedMessage('${c.id}', 'Simulated Message')">Message</button>
+                             <button class="danger" onclick="removeContactWrapper('${c.id}')">Remove</button>
+                        </span>
+                    </div>`
+                ).join('');
+        }
+
+        function renderLog() {
+            const log = document.getElementById('activityLog');
+            if (!log) return;
+            // Display latest entries first
+            log.innerHTML = GhostApp.activityLog.slice().reverse().map(entry =>
+                `<div>[${entry.timestamp}] <strong>${entry.type}:</strong> ${entry.detail}</div>`
+            ).join('');
+        }
+
+        function renderSettings() {
+             const settings = GhostApp.settings;
+             const mfaToggle = document.getElementById('mfa-toggle');
+             const lockoutInput = document.getElementById('lockout-threshold');
+
+             if (mfaToggle) mfaToggle.checked = settings.mfaEnabled;
+             if (lockoutInput) lockoutInput.value = settings.lockoutThreshold;
+        }
+
+        function renderAll() {
+            renderApps();
+            renderContacts();
+            renderLog();
+            renderSettings();
+        }
+
+        // --- Event Handlers ---
+        function handleAccessAttempt() {
+            if (GhostApp.accessHiddenApps()) {
+                // On successful access, show the hidden content
+                const hiddenContent = document.getElementById('hidden-content');
+                if (hiddenContent) {
+                    hiddenContent.style.display = 'block';
+                }
+                renderAll(); // Render content after successful access
+            } else {
+                 // Optionally hide content again if access fails after being shown?
+                 // Or handle lockout display elsewhere
+            }
+        }
+
+        function unhideAppWrapper(appId) {
+            if (confirm(`Are you sure you want to unhide this app?`)) {
+                if (GhostApp.unhideApp(appId)) {
+                    renderApps(); // Re-render app list
+                }
+            }
+        }
+
+         function removeContactWrapper(contactId) {
+             // Convert ID to number if it's stored as number in JS (adjust if needed)
+             const idToRemove = /^\d+$/.test(contactId) ? parseInt(contactId, 10) : contactId;
+             const contact = GhostApp.hiddenContacts.find(c => c.id === idToRemove);
+             if (contact && confirm(`Are you sure you want to remove contact "${contact.name}"?`)) {
+                if (GhostApp.removeHiddenContact(idToRemove)) {
+                    renderContacts(); // Re-render contact list
+                }
+            }
+         }
+
+        function handleMfaToggle(isChecked) {
+            GhostApp.setMfaEnabled(isChecked);
+            // No need to re-render settings immediately, state is saved
+        }
+
+        function handleSetLockout() {
+            const input = document.getElementById('lockout-threshold');
+            if (input && input.value) {
+                GhostApp.setLockoutThreshold(input.value);
+                alert(`Lockout threshold set to ${input.value} attempts.`);
+            }
+        }
+
+         function handleResetLockout() {
+             const input = document.getElementById('backup-password');
+             if (input && input.value) {
+                 GhostApp.resetLockout(input.value);
+                 input.value = ''; // Clear password field
+             } else {
+                 alert("Please enter the backup password.");
+             }
+         }
+
+         function handleResetData() {
+             if (GhostApp._resetDemoData()) {
+                 // Reset successful, re-render everything to show defaults
+                 renderAll();
+                 // Optionally hide the main content again
+                 const hiddenContent = document.getElementById('hidden-content');
+                 if (hiddenContent) {
+                    hiddenContent.style.display = 'none';
+                 }
+                 alert("Data reset. Access hidden content again to see defaults.");
+             }
+         }
+
+         function handleAppSearch() {
+             const input = document.getElementById('app-search');
+             if (input && input.value) {
+                 GhostApp.searchHiddenApps(input.value); // Alert is handled inside the function for demo
+             } else {
+                 alert("Please enter a search query.");
+             }
+         }
+
+        // --- Form Submissions ---
+        document.getElementById('add-app-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent page reload
+            const id = document.getElementById('app-id').value.trim();
+            const name = document.getElementById('app-name').value.trim();
+            const folder = document.getElementById('app-folder').value.trim();
+            if (id && name) {
+                const success = GhostApp.hideApp({ id: id, name: name, icon: 'icon.png', folder: folder || null });
+                if (success) {
+                    renderApps(); // Re-render if successful
+                    this.reset(); // Clear the form
+                } else {
+                    alert(`Failed to hide app "${name}". It might already be hidden.`);
+                }
+            } else {
+                alert("App ID and Name are required.");
+            }
+        });
+
+        document.getElementById('add-contact-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent page reload
+            const id = document.getElementById('contact-id').value.trim();
+            const name = document.getElementById('contact-name').value.trim();
+            const phone = document.getElementById('contact-phone').value.trim();
+            const notes = document.getElementById('contact-notes').value.trim();
+             // Try converting ID to number if it looks like one, otherwise use string
+             const contactId = /^\d+$/.test(id) ? parseInt(id, 10) : id;
+
+            if (id && name && phone) {
+                 const success = GhostApp.addHiddenContact({ id: contactId, name: name, phone: phone, notes: notes || null, ringtone: 'default' });
+                 if (success) {
+                    renderContacts(); // Re-render if successful
+                    this.reset(); // Clear the form
+                 } else {
+                     alert(`Failed to add contact "${name}". ID might already exist.`);
+                 }
+            } else {
+                 alert("Contact ID, Name, and Phone are required.");
+            }
+        });
+
+
+        // --- Initial Setup ---
+        // Override logActivity to auto-render the log section
+        const originalLogActivity = GhostApp.logActivity;
+        GhostApp.logActivity = function(type, detail) {
+            originalLogActivity(type, detail); // Call the original function
+            renderLog(); // Update the log display
+        };
+
+        // Initial render on page load (only renders log initially)
+        renderLog();
+        // Settings might be visible even if locked out, render them
+        renderSettings();
+
+        console.log("GhostApp HTML Interface Initialized.");
+
+    </script>
+
+</body>
+</html>
